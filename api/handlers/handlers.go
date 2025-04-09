@@ -29,10 +29,11 @@ func (customer Customer) findById() bool {
 	for _, c := range customers {
 		if c.ID == customer.ID {
 			exists = true
+			break
 		}
 	}
 
-	return exists == true
+	return exists
 }
 
 func loadCustomers(filePath string) []Customer {
@@ -102,6 +103,7 @@ func GetCustomer(w http.ResponseWriter, r *http.Request) {
 		if customer.ID == id {
 			w.WriteHeader(http.StatusOK)
 			json.NewEncoder(w).Encode(customer)
+			break
 		}
 	}
 }
