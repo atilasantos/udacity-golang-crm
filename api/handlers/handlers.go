@@ -24,16 +24,18 @@ type Customer struct {
 	Contacted bool
 }
 
-func (customer Customer) findById() bool {
+func (customer Customer) findById() (bool, int) {
 	var exists bool = false
-	for _, c := range customers {
+	var index int
+	for i, c := range customers {
 		if c.ID == customer.ID {
+			index = i
 			exists = true
 			break
 		}
 	}
 
-	return exists
+	return exists, index
 }
 
 func loadCustomers(filePath string) []Customer {
@@ -65,12 +67,13 @@ func AddCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.Unmarshal(reqBody, &customer)
-	if customer.findById() {
+	customerExists, _ := customer.findById()
+	if customerExists {
 		w.WriteHeader(http.StatusConflict)
 		response, err := json.Marshal(struct {
 			Status string `json:"status"`
 		}{
-			Status: fmt.Sprintf("Customer %s already exists", customer.Name),
+			Status: "Customer with this identification already exists",
 		})
 		if err != nil {
 			log.Fatal(err)
@@ -142,5 +145,37 @@ func DeleteCustomer(w http.ResponseWriter, r *http.Request) {
 		json.Unmarshal(response, &message)
 		json.NewEncoder(w).Encode(message)
 
+	}
+}
+
+func UpdateCustomer(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set(CONTENT_TYPE, CONTENT_VALUE)
+
+	var customer Customer
+	reqBody, _ := io.ReadAll(r.Body)
+
+	json.Unmarshal(reqBody, &customer)
+
+	customerExists, index := customer.findById()
+	if customerExists {
+		customers[index] = customer
+		w.WriteHeader(http.StatusAccepted)
+
+		json.NewEncoder(w).Encode(customer)
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		response, err := json.Marshal(struct {
+			Status string `json:"status"`
+		}{
+			Status: fmt.Sprintf("Customer with id %d does not exists", customer.ID),
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var message map[string]string
+
+		json.Unmarshal(response, &message)
+		json.NewEncoder(w).Encode(message)
 	}
 }
