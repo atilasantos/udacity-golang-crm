@@ -1,0 +1,44 @@
+services:
+  crm_server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: crm_server
+    hostname: crm_server
+    ports:
+      - "3000:3000"  # Adjust if your app listens on a different port
+    depends_on:
+      - postgresql
+    environment:
+      DB_HOST: postgresql
+      DB_PORT: 5432
+      DB_USER: "postgres"
+      DB_PASSWORD: "postgres"
+      DB_NAME: "appdb"
+      APP_PORT: "3000"
+    volumes:
+      - ./api/handlers/customers.json:/app/api/handlers/customers.json
+    networks:
+      - backend
+
+  postgresql:
+    image: postgres:15
+    container_name: postgresql
+    hostname: postgresql
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: appdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
