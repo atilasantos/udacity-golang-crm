@@ -23,7 +23,7 @@ type Customer struct {
 	Name      string `json:"name"`
 	Role      string `json:"role"`
 	Email     string `json:"email"`
-	Phone     int    `json:"phone"`
+	Phone     string `json:"phone"`
 	Contacted bool   `json:"contacted"`
 }
 
@@ -133,21 +133,34 @@ func DeleteCustomer(w http.ResponseWriter, r *http.Request) {
 func UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set(ContentType, ContentValue)
 
-	var customer Customer
-	reqBody, _ := io.ReadAll(r.Body)
+	vars := mux.Vars(r)
+	pathIDStr := vars["id"]
+	pathID, err := strconv.Atoi(pathIDStr)
+	if err != nil {
+		http.Error(w, "Invalid ID in path", http.StatusBadRequest)
+		return
+	}
 
-	json.Unmarshal(reqBody, &customer)
+	var customer Customer
+	if err := json.NewDecoder(r.Body).Decode(&customer); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	if customer.ID != pathID {
+		http.Error(w, "ID in path and body do not match", http.StatusBadRequest)
+		return
+	}
 
 	customerExists, index := customer.findById()
 	if customerExists {
 		customers[index] = customer
 		w.WriteHeader(http.StatusAccepted)
-
 		json.NewEncoder(w).Encode(customer)
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(map[string]string{
-			"status": fmt.Sprintf("Customer with id %d does not exists", customer.ID),
+			"status": fmt.Sprintf("Customer with id %d does not exist", customer.ID),
 		})
 	}
 }
