@@ -12,10 +12,17 @@ import (
 
 func main() {
 
+	port := os.Getenv("APP_PORT")
+	if port == "" {
+		port = "3000"
+		log.Println("APP_PORT not set, defaulting to :3000")
+	}
+
 	router := mux.NewRouter()
 	routes.RegisterRoutes(router)
 
-	if err := http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("APP_PORT")), router); err != nil {
+	log.Printf("Server starting on port %s...", port)
+	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), router); err != nil {
 		log.Fatal(err)
 	}
 }
