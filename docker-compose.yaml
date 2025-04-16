@@ -16,8 +16,9 @@ services:
       DB_PASSWORD: "postgres"
       DB_NAME: "appdb"
       APP_PORT: "3000"
+      CUSTOMER_FILE_PATH: "/app/customers.json"
     volumes:
-      - ./api/handlers/customers.json:/app/api/handlers/customers.json
+      - ./api/handlers/customers.json:/app/customers.json
     networks:
       - backend
 

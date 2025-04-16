@@ -7,21 +7,24 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"slices"
 	"strconv"
 
 	"github.com/gorilla/mux"
 )
 
-var CONTENT_TYPE string = "Content-Type"
-var CONTENT_VALUE string = "application/json"
+const (
+	ContentType  = "Content-Type"
+	ContentValue = "application/json"
+)
 
 type Customer struct {
-	ID        int
-	Name      string
-	Role      string
-	Email     string
-	Phone     int
-	Contacted bool
+	ID        int    `json:"id"`
+	Name      string `json:"name"`
+	Role      string `json:"role"`
+	Email     string `json:"email"`
+	Phone     int    `json:"phone"`
+	Contacted bool   `json:"contacted"`
 }
 
 func (customer Customer) findById() (bool, int) {
@@ -42,7 +45,7 @@ func loadCustomers(filePath string) []Customer {
 	fileContent, err := os.Open(filePath)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Printf("Failed to load customers file: %s", err))
 	}
 
 	defer fileContent.Close()
@@ -55,33 +58,24 @@ func loadCustomers(filePath string) []Customer {
 
 }
 
-var customers []Customer = loadCustomers("api/handlers/customers.json")
+var customers []Customer = loadCustomers(os.Getenv("CUSTOMER_FILE_PATH"))
 
 func AddCustomer(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set(CONTENT_TYPE, CONTENT_VALUE)
+	w.Header().Set(ContentType, ContentValue)
 
 	var customer Customer
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, "Unable to read request body", http.StatusBadRequest)
 	}
 
 	json.Unmarshal(reqBody, &customer)
 	customerExists, _ := customer.findById()
 	if customerExists {
 		w.WriteHeader(http.StatusConflict)
-		response, err := json.Marshal(struct {
-			Status string `json:"status"`
-		}{
-			Status: "Customer with this identification already exists",
+		json.NewEncoder(w).Encode(map[string]string{
+			"status": "Customer with this identification already exists",
 		})
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		var message map[string]string
-		json.Unmarshal(response, &message)
-		json.NewEncoder(w).Encode(message)
 	} else {
 		customers = append(customers, customer)
 		w.WriteHeader(http.StatusCreated)
@@ -90,14 +84,14 @@ func AddCustomer(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetCustomers(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set(CONTENT_TYPE, CONTENT_VALUE)
+	w.Header().Set(ContentType, ContentValue)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(customers)
 }
 
 func GetCustomer(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set(CONTENT_TYPE, CONTENT_VALUE)
+	w.Header().Set(ContentType, ContentValue)
 
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
@@ -112,44 +106,32 @@ func GetCustomer(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteCustomer(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set(CONTENT_TYPE, CONTENT_VALUE)
-	var exists bool = true
+	w.Header().Set(ContentType, ContentValue)
+	var found bool = false
 
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
 
 	for index, customer := range customers {
 		if customer.ID == id {
-			exists = true
-			customers = append(customers[:index], customers[index+1:]...)
+			found = true
+			customers = slices.Delete(customers, index, index+1)
 			w.WriteHeader(http.StatusNoContent)
 			json.NewEncoder(w).Encode(customer)
-			break
-		} else {
-			exists = false
+			return
 		}
 	}
 
-	if !exists {
+	if !found {
 		w.WriteHeader(http.StatusNotFound)
-		response, err := json.Marshal(struct {
-			Status string `json:"status"`
-		}{
-			Status: fmt.Sprintf("Customer with id %d does not exists", id),
+		json.NewEncoder(w).Encode(map[string]string{
+			"status": fmt.Sprintf("Customer with id %d does not exists", id),
 		})
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		var message map[string]string
-		json.Unmarshal(response, &message)
-		json.NewEncoder(w).Encode(message)
-
 	}
 }
 
 func UpdateCustomer(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set(CONTENT_TYPE, CONTENT_VALUE)
+	w.Header().Set(ContentType, ContentValue)
 
 	var customer Customer
 	reqBody, _ := io.ReadAll(r.Body)
@@ -164,18 +146,8 @@ func UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(customer)
 	} else {
 		w.WriteHeader(http.StatusNotFound)
-		response, err := json.Marshal(struct {
-			Status string `json:"status"`
-		}{
-			Status: fmt.Sprintf("Customer with id %d does not exists", customer.ID),
+		json.NewEncoder(w).Encode(map[string]string{
+			"status": fmt.Sprintf("Customer with id %d does not exists", customer.ID),
 		})
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		var message map[string]string
-
-		json.Unmarshal(response, &message)
-		json.NewEncoder(w).Encode(message)
 	}
 }
