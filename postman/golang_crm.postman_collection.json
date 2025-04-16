@@ -1,0 +1,150 @@
+{
+	"info": {
+		"_postman_id": "b8478338-a5fb-41c8-9eef-a41898fafc97",
+		"name": "Udacity Golang CRM",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "10892028",
+		"_collection_link": "https://grey-flare-708162.postman.co/workspace/New-Team-Workspace~0663663b-97cd-48a2-9c8e-ba4096c87271/collection/10892028-b8478338-a5fb-41c8-9eef-a41898fafc97?action=share&source=collection_link&creator=10892028"
+	},
+	"item": [
+		{
+			"name": "Get all customers",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/customers",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"customers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get customer by id",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/customers/{{id}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"customers",
+						"{{id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add new customer",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": " {\n    \"ID\": 77,\n    \"Name\": \"Cabrito Xiquita\",\n    \"Role\": \"SRE\",\n    \"Email\": \"cabrito@gmail.com\",\n    \"Phone\": \"(389)869-3815x19724\",\n    \"Contacted\": true\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/customers",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"customers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update customer",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": " {\n    \"ID\": 77,\n    \"Name\": \"Cabrito Xiquita\",\n    \"Role\": \"SRE\",\n    \"Email\": \"cabrito@gmail.com\",\n    \"Phone\": \"(389)869-3815x19724\",\n    \"Contacted\": true\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/customers",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"customers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete customer by id",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": " {\n    \"ID\": 77,\n    \"Name\": \"Cabrito Xiquita\",\n    \"Role\": \"SRE\",\n    \"Email\": \"cabrito@gmail.com\",\n    \"Phone\": \"(389)869-3815x19724\",\n    \"Contacted\": true\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/customers/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"customers",
+						"2"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
